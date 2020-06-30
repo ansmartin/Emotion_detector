@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import paho.mqtt.client as mqttClient
+import json
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
+import matplotlib.animation as animation
 from tensorflow.keras.models import load_model
 
 
@@ -10,20 +12,23 @@ brokerHostname = "Localhost"
 username = "emotion_detector"
 topic = "PJ/Face"
 
+topic_ = "PJ/Emotion"
+
 width, height = 48, 48
 emotions = ["Ira", "Asco", "Miedo", "Alegría", "Tristeza", "Sorpresa", "Neutral"]
 
-path_haarcascade1 = 'haarcascade_frontalface_default.xml'
-path_haarcascade2 = 'haarcascade_frontalface_alt.xml'
-path_haarcascade3 = 'haarcascade_frontalface_alt2.xml'
+path_haarcascade1 = '../haarcascade_frontalface_default.xml'
+path_haarcascade2 = '../haarcascade_frontalface_alt.xml'
+path_haarcascade3 = '../haarcascade_frontalface_alt2.xml'
 
-path_model = 'my_model_u_80'
+path_model = '../my_model_u_100'
 
 def hcc_cargado(h, cargando):
     if cargando:
         print(h, "cargado.")
     else:
         print(h, "no encontrado.")
+        exit()
 
 
 classifier_default = cv2.CascadeClassifier()
@@ -45,6 +50,7 @@ if model is not None:
     print('Modelo cargado: ',path_model)
 else:
     print(path_model, "no encontrado.")
+    exit()
     
 
 def on_connect(client, userdata, rc):
@@ -58,7 +64,7 @@ def on_connect(client, userdata, rc):
  
 
 def on_message(client, userdata, msg):
-    print("\nNuevo mensaje!")
+    print("\n\nNuevo mensaje recibido")
     #print('%s %s' % (msg.topic, msg.payload))
     img_array = np.frombuffer(msg.payload, np.uint8)
     #print(img_array)
@@ -69,10 +75,22 @@ def on_message(client, userdata, msg):
         print('Error. Cara no detectada')
         return
     resultados = predecir_emocion(cara)
-    print("Emoción detectada: ",emotions[resultados.argmax()])
+
+    e = int(resultados.argmax())
+    c = int(resultados[e]*100)
+    print("Emoción detectada: ",emotions[e])
+    print("Confianza: ",c,"%")
+
+    msg = json.dumps({"emotion" : e, "confianza" : c})
+    #print(msg)
+    client.publish(topic_, msg)
+    
     imprimir_panel(image, cara, resultados)
     #mostrar_imagen(image)
 
+def on_publish(client,userdata,result):
+    print("\nMensaje publicado en el topic ",topic_,"\n")
+    #pass
     
 def mostrar_imagen(image):
     if image is None:
@@ -88,6 +106,8 @@ def mostrar_imagen_cv2(image):
     cv2.destroyAllWindows()
 
 def imprimir_panel(original, cara, resultados):
+    plt.close()
+    plt.ion()
     f = plt.figure(figsize=(8,4))
     #imagen original
     f.add_subplot(2,2, 1)
@@ -108,7 +128,10 @@ def imprimir_panel(original, cara, resultados):
     plt.title('Emoción detectada')
     #f.tight_layout(pad=1.0)
     plt.subplots_adjust(left=0, right=0.9, top=0.9, bottom=0.2, wspace=0.05, hspace=0.3)
-    plt.show()
+
+    plt.show(block=False)
+    plt.pause(0.1)
+
 
 
 def detectar_cara(image):
@@ -157,6 +180,7 @@ print("\nIniciando...")
 client = mqttClient.Client(username)
 client.on_connect = on_connect
 client.on_message = on_message
+client.on_publish = on_publish
 
 client.connect(brokerHostname, port=1883)
 print("Conectado al broker: ",brokerHostname)
