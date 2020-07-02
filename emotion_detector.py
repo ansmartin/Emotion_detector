@@ -4,7 +4,6 @@ import json
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
-import matplotlib.animation as animation
 from tensorflow.keras.models import load_model
 
 
@@ -17,11 +16,13 @@ topic_ = "PJ/Emotion"
 width, height = 48, 48
 emotions = ["Ira", "Asco", "Miedo", "Alegría", "Tristeza", "Sorpresa", "Neutral"]
 
+textos=0
+
 path_haarcascade1 = '../haarcascade_frontalface_default.xml'
 path_haarcascade2 = '../haarcascade_frontalface_alt.xml'
 path_haarcascade3 = '../haarcascade_frontalface_alt2.xml'
 
-path_model = '../my_model_u_100'
+path_model = '../my_model_uu_150_60'
 
 def hcc_cargado(h, cargando):
     if cargando:
@@ -64,7 +65,8 @@ def on_connect(client, userdata, rc):
  
 
 def on_message(client, userdata, msg):
-    print("\n\nNuevo mensaje recibido")
+    if textos:
+        print("\n\nNuevo mensaje recibido")
     #print('%s %s' % (msg.topic, msg.payload))
     img_array = np.frombuffer(msg.payload, np.uint8)
     #print(img_array)
@@ -72,20 +74,22 @@ def on_message(client, userdata, msg):
     image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
     cara = detectar_cara(image)
     if cara is None:
-        print('Error. Cara no detectada')
+        if textos:
+            print('Error. Cara no detectada')
         return
     resultados = predecir_emocion(cara)
 
     e = int(resultados.argmax())
     c = int(resultados[e]*100)
-    print("Emoción detectada: ",emotions[e])
-    print("Confianza: ",c,"%")
+    if textos:
+        print("Emoción detectada: ",emotions[e])
+        print("Confianza: ",c,"%")
 
     msg = json.dumps({"emotion" : e, "confianza" : c})
     #print(msg)
     client.publish(topic_, msg)
     
-    imprimir_panel(image, cara, resultados)
+    #imprimir_panel(image, cara, resultados)
     #mostrar_imagen(image)
 
 def on_publish(client,userdata,result):
@@ -136,7 +140,8 @@ def imprimir_panel(original, cara, resultados):
 
 def detectar_cara(image):
     face_final=None
-    print("Detectando cara...")
+    if textos:
+        print("Detectando cara...")
  
     for c in classifiers:
         faces = c.detectMultiScale(image)
@@ -180,7 +185,7 @@ print("\nIniciando...")
 client = mqttClient.Client(username)
 client.on_connect = on_connect
 client.on_message = on_message
-client.on_publish = on_publish
+#client.on_publish = on_publish
 
 client.connect(brokerHostname, port=1883)
 print("Conectado al broker: ",brokerHostname)
