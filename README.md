@@ -1,6 +1,6 @@
 # Reconocimiento de emociones en avatares para simulador de vehículos aéreos no tripulados en robótica asistencial
 
-Trabajo de Fin de Máster del curso MUII 2024/2025 (Máster Universitario en Ingeniería Informática de la UCLM).
+Trabajo de Fin de Máster del curso MUII 2019/2020 (Máster Universitario en Ingeniería Informática de la UCLM).
 
 **Autor**: Anselmo Martínez Martínez
 
@@ -8,7 +8,7 @@ Trabajo de Fin de Máster del curso MUII 2024/2025 (Máster Universitario en Ing
 
 ## Resumen
 
-Para este trabajo de Fin de Máster se ha desarrollado un sistema de reconocimiento de emociones para detectar la expresión de un avatar en una aplicación implementada en Unity para la simulación del vuelo de un vehículo aéreo no tripulado con fines asistenciales. Dentro de este entorno virtual se van tomando periódicamente imágenes desde la cámara embarcada del vehículo aéreo para la monitorización del avatar. Estas imágenes se envían mediante el protocolo de mensajes MQTT al sistema externo implementado para el análisis de emociones. Gracias al uso de algoritmos de visión artificial, este sistema programado en lenguaje Python es capaz de detectar la cara en la imagen recibida y clasificar la emoción del avatar en una de siete posibles (ira, asco, miedo, felicidad, tristeza, sorpresa o neutral) con un porcentaje de certeza. Finalmente, la información de la emoción detectada se envía de vuelta a Unity, de nuevo mediante MQTT, para mostrarla en la interfaz de usuario de la aplicación principal.
+Para este trabajo de Fin de Máster se ha desarrollado un sistema de reconocimiento de emociones para detectar la expresión de la cara de un avatar dentro de una aplicación implementada en Unity para la simulación del vuelo de un vehículo aéreo no tripulado con fines asistenciales. Dentro de este entorno virtual se van tomando periódicamente imágenes desde la cámara embarcada del vehículo aéreo para la monitorización del avatar. Estas imágenes se envían mediante el protocolo de mensajes MQTT al sistema externo implementado para el análisis de emociones. Este sistema programado en lenguaje Python es capaz de detectar la cara en la imagen recibida gracias al uso de algoritmos de visión artificial y clasificar la emoción del avatar en una de siete posibles (ira, asco, miedo, felicidad, tristeza, sorpresa o neutral) con un porcentaje de certeza. Finalmente la información de la emoción detectada se envía de vuelta a Unity (de nuevo mediante MQTT) para mostrarla en la interfaz de usuario de la aplicación principal.
 
 ---
 
