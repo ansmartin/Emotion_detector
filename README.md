@@ -10,6 +10,9 @@ Trabajo de Fin de Máster del curso MUII 2019/2020 (Máster Universitario en Ing
 
 Para este trabajo de Fin de Máster se ha desarrollado un sistema de reconocimiento de emociones para detectar la expresión de la cara de un avatar dentro de una aplicación implementada en Unity para la simulación del vuelo de un vehículo aéreo no tripulado con fines asistenciales. Dentro de este entorno virtual se van tomando periódicamente imágenes desde la cámara embarcada del vehículo aéreo para la monitorización del avatar. Estas imágenes se envían mediante el protocolo de mensajes MQTT al sistema externo implementado para el análisis de emociones. Este sistema programado en lenguaje Python es capaz de detectar la cara en la imagen recibida gracias al uso de algoritmos de visión artificial y clasificar la emoción del avatar en una de siete posibles (ira, asco, miedo, felicidad, tristeza, sorpresa o neutral) con un porcentaje de certeza. Finalmente la información de la emoción detectada se envía de vuelta a Unity (de nuevo mediante MQTT) para mostrarla en la interfaz de usuario de la aplicación principal.
 
+En la siguiente figura podemos ver un diagrama general del flujo que siguen los datos.
+<img width="950" height="677" alt="image" src="https://github.com/user-attachments/assets/fe5fa3ca-5716-40de-8ce6-0e439328e7e5" />
+
 ---
 
 ## Desarrollo
