@@ -29,7 +29,7 @@ Se utilizan los modelos "haarcascade_frontalface_default", "haarcascade_frontalf
 
 ### 2. Red neuronal convolucional (CNN)
 
-Esta red ha sido creada mediante el uso de la API de Keras. El modelo se inicia desde cero y se le debe añadir una a una las capas que formarán su estructura. Entre las capas que podemos incluir se encuentran: 
+Esta red ha sido creada mediante el uso de la librería de Keras. El modelo se inicia desde cero y se le debe añadir una a una las capas que formarán su estructura. Entre las capas que podemos incluir se encuentran: 
    * Las capas convolucionales: Se encargan de obtener características a partir de las dependencias espaciales entre los píxeles de la imagen, generando múltiples filtros que producen un mapa de características. Se suele incluir varias de estas capas (a veces seguidas una de otra) para capturar la mayor información posible. Las primeras capas detectan formas sencillas como líneas y curvas mientras que las últimas están más especializadas y pueden reconocer formas complejas. Sin embargo, no conviene añadir demasiadas porque llega un momento en el que no suponen una mejora significativa para el modelo y solo se aumenta su complejidad y tiempo de cómputo.
    * Las capas de subsampling (como la MaxPooling o la AveragePooling): Se incluyen tras las convolucionales para disminuir el número de parámetros que se generan y reducir posteriormente el sobreajuste del modelo.
    * La capa Flatten: Se coloca justo antes de la capa de entrada de la red neuronal final para convertir la salida de las convoluciones en un vector y poder introducir los valores en la red.
@@ -46,7 +46,7 @@ Se ha decidido añadir tres conjuntos de capas convolucionales (el primero con s
    * Conv (4): Una cuarta capa convolucional con 128 kernels de 3x3 y ReLU como función de activación.
    * Conv (5): Una quinta capa convolucional igual que la anterior.
    * AvgP (2): Una segunda capa AveragePooling de 3x3 con 2 unidades de desplazamiento.
-   * Flatten: Una capa Flatten entre las capas en las que se realiza la convolución y la siguiente red neuronal totalmente conectada.% para convertir la salida a un vector y poder introducir los valores en la red.
+   * Flatten: Una capa Flatten entre las capas en las que se realiza la convolución y la siguiente red neuronal totalmente conectada para convertir la salida a un vector y poder introducir los valores en la red.
    * Capa de entrada de la red neuronal'': Una capa de entrada con 1\,024 neuronas.
    * Drop (1): Una primera capa de Dropout con el objetivo de deshacerse del 20\% de las neuronas y reducir el sobreajuste.
    * Capa oculta de la red neuronal: Una capa oculta con el mismo número de neuronas que la entrada.
