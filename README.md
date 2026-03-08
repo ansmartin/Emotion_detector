@@ -60,10 +60,28 @@ Se ha decidido añadir tres conjuntos de capas convolucionales (el primero con s
 
 ## Cómo iniciar la aplicación en tu propia máquina
 
-Iniciar el archivo principal de la aplicación:
+1. Crear entorno virtual (recomendado)
+
+	```
+	python -m venv venv
+	```
+
+2. Activar entorno virtual (recomendado)
+
+	```
+	.\venv\Scripts\activate
+	```
+
+3. Instalar dependencias:
 
    ```
-   $ python -m emotion_detector.py
+   python -m pip install -r requirements.txt
+   ```
+   
+4. Iniciar el archivo principal de la aplicación:
+
+   ```
+   python -m emotion_detector.py
    ```
 
 ---
