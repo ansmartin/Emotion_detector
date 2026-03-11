@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import paho.mqtt.client as mqttClient
 import json
 import numpy as np
@@ -7,96 +6,100 @@ from matplotlib import pyplot as plt
 from tensorflow.keras.models import load_model
 
 
-brokerHostname = "Localhost"
-username = "emotion_detector"
-topic = "PJ/Face"
-
-topic_ = "PJ/Emotion"
-
+# OPCIONES
 width, height = 48, 48
+print_texts = False
+print_panel = False
+
+# BROKER MQTT
+broker_hostname = "Localhost"
+broker_port = 1883
+
+# TOPICS
+topic_face = "PJ/Face"
+topic_emotion = "PJ/Emotion"
+
+# NOMBRE APP
+username = "emotion_detector"
+
+# EMOCIONES
 emotions = ["Ira", "Asco", "Miedo", "Alegría", "Tristeza", "Sorpresa", "Neutral"]
 
-textos=0
-
-path_haarcascade1 = '../haarcascade_frontalface_default.xml'
-path_haarcascade2 = '../haarcascade_frontalface_alt.xml'
-path_haarcascade3 = '../haarcascade_frontalface_alt2.xml'
-
-path_model = '../my_model_uu_150_60'
-
-def hcc_cargado(h, cargando):
-    if cargando:
-        print(h, "cargado.")
-    else:
-        print(h, "no encontrado.")
-        exit()
-
+# MODELOS
+path_hcc_1 = '../haarcascade_frontalface_default.xml'
+path_hcc_2 = '../haarcascade_frontalface_alt.xml'
+path_hcc_3 = '../haarcascade_frontalface_alt2.xml'
+path_cnn = '../my_model_uu_150_60'
 
 classifier_default = cv2.CascadeClassifier()
-cargando = classifier_default.load(path_haarcascade1)
-hcc_cargado(path_haarcascade1, cargando)
-
 classifier_alt = cv2.CascadeClassifier()
-cargando = classifier_alt.load(path_haarcascade2)
-hcc_cargado(path_haarcascade2, cargando)
-
 classifier_alt2 = cv2.CascadeClassifier()
-cargando = classifier_alt2.load(path_haarcascade3)
-hcc_cargado(path_haarcascade3, cargando)
-
 classifiers = [classifier_default, classifier_alt, classifier_alt2]
 
-model = load_model(path_model)
-if model is not None:
-    print('Modelo cargado: ',path_model)
-else:
-    print(path_model, "no encontrado.")
+success = classifier_default.load(path_hcc_1)
+if not success:
+    print(path_hcc_1, 'no encontrado.')
+    exit()
+
+success = classifier_alt.load(path_hcc_2)
+if not success:
+    print(path_hcc_2, 'no encontrado.')
+    exit()
+
+success = classifier_alt2.load(path_hcc_3)
+if not success:
+    print(path_hcc_3, 'no encontrado.')
+    exit()
+
+model_cnn = load_model(path_cnn)
+if not model_cnn:
+    print(path_cnn, 'no encontrado.')
     exit()
     
 
 def on_connect(client, userdata, rc):
-    print('Connected with result code %s' % rc)
-    # Subscribing in on_connect() means that if we lose the connection and
-    # reconnect then subscriptions will be renewed. There are other methods to achieve this.
+    print('Conectado con código %s' % rc)
     if rc == 0:
-        print("Connected to broker")
+        print("Conectado al broker")
     else:
-        print("Connection failed")
+        print("Conexión fallida")
  
-
 def on_message(client, userdata, msg):
-    if textos:
-        print("\n\nNuevo mensaje recibido")
-    #print('%s %s' % (msg.topic, msg.payload))
+    if print_texts:
+        print("\n\nNuevo mensaje recibido:")
+        print('%s %s' % (msg.topic, msg.payload))
+    
+    # detectar cara a partir de la imagen recibida
     img_array = np.frombuffer(msg.payload, np.uint8)
-    #print(img_array)
-    #print(len(img_array))
     image = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-    cara = detectar_cara(image)
-    if cara is None:
-        if textos:
+    face = get_face_from_image(image)
+    if face is None:
+        if print_texts:
             print('Error. Cara no detectada')
         return
-    resultados = predecir_emocion(cara)
 
-    e = int(resultados.argmax())
-    c = int(resultados[e]*100)
-    if textos:
-        print("Emoción detectada: ",emotions[e])
-        print("Confianza: ",c,"%")
+    # obtener resultados de la emoción predecida por la CNN
+    results = get_predicted_emotion_results(face)
+    emotion_position = int(results.argmax())
+    confidence_score = int(results[emotion_position]*100)
+    if print_texts:
+        print("\nResultados:")
+        print("  Emoción detectada: ",emotions[emotion_position])
+        print("  Confianza: ",confidence_score,"%")
 
-    msg = json.dumps({"emotion" : e, "confianza" : c})
-    #print(msg)
-    client.publish(topic_, msg)
+    # crear y publicar mensaje
+    msg = json.dumps({"emotion" : emotion_position, "confianza" : confidence_score})
+    client.publish(topic_emotion, msg)
     
-    #imprimir_panel(image, cara, resultados)
-    #mostrar_imagen(image)
+    if print_panel:
+        show_panel(image, face, results)
 
-def on_publish(client,userdata,result):
-    print("\nMensaje publicado en el topic ",topic_,"\n")
+def on_publish(client, userdata, result):
+    print("\nMensaje publicado en el topic ",topic_emotion,"\n")
     #pass
-    
-def mostrar_imagen(image):
+
+
+def show_image(image):
     if image is None:
         print('Error. Imagen no detectada')
     else:
@@ -104,29 +107,29 @@ def mostrar_imagen(image):
         plt.xticks([]), plt.yticks([])
         plt.show()
 
-def mostrar_imagen_cv2(image):
+def show_image_cv2(image):
     cv2.imshow('imagen',image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-def imprimir_panel(original, cara, resultados):
+def show_panel(original_image, detected_face, results):
     plt.close()
     plt.ion()
     f = plt.figure(figsize=(8,4))
-    #imagen original
+    # imagen original
     f.add_subplot(2,2, 1)
-    plt.imshow(cv2.cvtColor(original, cv2.COLOR_BGR2RGB))
+    plt.imshow(cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB))
     plt.title('Imagen original')
     plt.xticks([]), plt.yticks([])
-    #cara detectada
+    # cara detectada
     f.add_subplot(2,2, 3)
-    plt.imshow(cv2.cvtColor(cara, cv2.COLOR_BGR2RGB))
+    plt.imshow(cv2.cvtColor(detected_face, cv2.COLOR_BGR2RGB))
     plt.title('Cara detectada')
     plt.xticks([]), plt.yticks([])
-    #resultados del detector de emociones
+    # resultados del detector de emociones
     f.add_subplot(1,2, 2)
     y_pos = np.arange(len(emotions))
-    plt.bar(y_pos, resultados, align='center', alpha=0.5)
+    plt.bar(y_pos, results, align='center', alpha=0.5)
     plt.xticks(y_pos, emotions, rotation=45)
     plt.ylabel('Porcentaje')
     plt.title('Emoción detectada')
@@ -137,60 +140,59 @@ def imprimir_panel(original, cara, resultados):
     plt.pause(0.1)
 
 
-
-def detectar_cara(image):
-    face_final=None
-    if textos:
+def get_face_from_image(image):
+    final_face = None
+    if print_texts:
         print("Detectando cara...")
  
     for c in classifiers:
-        faces = c.detectMultiScale(image)
-        for f in faces:
-            x, y, w, h = [ v for v in f ]
+        detected_faces = c.detectMultiScale(image)
+        for face in detected_faces:
+            x, y, w, h = [ v for v in face ]
             sub_face = image[y:y+h, x:x+w]
             # nos quedamos con la imagen más grande de las caras que detecte
-            if face_final is None:
-                face_final=sub_face
+            if final_face is None:
+                final_face = sub_face
             else:
-                if (sub_face.shape[0]*sub_face.shape[1])>(face_final.shape[0]*face_final.shape[1]):
-                    face_final=sub_face
+                if (sub_face.shape[0]*sub_face.shape[1]) > (final_face.shape[0]*final_face.shape[1]):
+                    final_face = sub_face
     
-    #mostrar_imagen(face_final)
-    return face_final
+    #show_image(face_final)
+    return final_face
 
 
-def predecir_emocion(cara):
-    if cara is None:
+def get_predicted_emotion_results(face):
+    if face is None:
         print('Error. Cara no detectada')
     else:
-        cara = cv2.cvtColor(cara, cv2.COLOR_BGR2GRAY)
-        cara = cv2.resize(cara, (width, height))
-        cara = cara.reshape(1, width, height, 1)/255.0
-        
-        result = model.predict(cara)
+        # reducir tamaño de la imagen y pasar a blanco y negro
+        face = cv2.resize(face, (width, height))
+        face = face.reshape(1, width, height, 1)/255.0
+        face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+
+        # obtener predicción
+        result = model_cnn.predict(face)
         return result[0]
 
-def emotion_analysis(emotion_values):
+def show_emotion_analysis(emotion_values):
     y_pos = np.arange(len(emotions))
-
     plt.bar(y_pos, emotion_values, align='center', alpha=0.5)
     plt.xticks(y_pos, emotions)
     plt.ylabel('Porcentaje')
     plt.title('Emoción detectada')
-
     plt.show()
 
-print("\nIniciando...")
 
+print("\nIniciando cliente ",username)
 client = mqttClient.Client(username)
 client.on_connect = on_connect
 client.on_message = on_message
-#client.on_publish = on_publish
+client.on_publish = on_publish
 
-client.connect(brokerHostname, port=1883)
-print("Conectado al broker: ",brokerHostname)
+client.connect(broker_hostname, port=broker_port)
+print("Conectado al broker: ",broker_hostname)
 
-client.subscribe(topic)
-print("Suscrito al topic: ",topic)
+client.subscribe(topic_face)
+print("Suscrito al topic: ",topic_face)
 
 client.loop_forever()
