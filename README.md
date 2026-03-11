@@ -22,9 +22,12 @@ Se ha programado una aplicación en Python en la que inicialmente se realiza el 
 
 ### 1. Detección de la cara
 
-Para el reconocimiento de la cara de la persona a partir de una fotografía se usa un clasificador en cascada basado en filtros Haar. OpenCV proporciona varios modelos ya entrenados de estos clasificadores y que pueden ser cargados mediante la propia librería. Se va a usar tres modelos diferentes debido a que es posible que uno solo no consiga detectar la cara. Al usar tres, la probabilidad de encontrarla está casi garantizada, aunque siempre puede surgir algún error puntual debido a sombras, desenfoques o giros. De esta forma, se busca si existe una cara en la imagen usando los tres modelos y se guarda si se encuentra. Finalmente, la foto del rostro se recorta para quedarnos solamente con la parte que nos interesa y quitarle todo lo demás. Las imágenes resultantes pasan entonces a introducirse en la red neuronal convolucional para su clasificación en una de las posibles emociones.
+Para el reconocimiento de la cara de la persona a partir de una fotografía se puede usar clasificadores en cascada basados en filtros Haar. OpenCV proporciona varios modelos ya entrenados de estos clasificadores y que pueden ser cargados mediante la propia librería. Se va a usar tres modelos diferentes debido a que es posible que uno sólo no consiga detectar la cara. Al usar varios la probabilidad de encontrar una cara está casi garantizada aunque siempre puede surgir algún error puntual debido a sombras, desenfoques o giros. De esta forma se busca si existe una cara en la imagen usando los tres modelos y se guarda si se encuentra. Finalmente, la foto del rostro se recorta para quedarnos solamente con la parte que nos interesa y quitar todo lo demás. Las imágenes resultantes pasarán entonces a introducirse en la red neuronal convolucional para su clasificación en una de las posibles emociones.
 
-Se utilizan los modelos "haarcascade_frontalface_default", "haarcascade_frontalface_alt" y "haarcascade_frontalface_alt2".
+Para este proyecto se han usado los siguientes modelos de OpenCV:
+- "haarcascade_frontalface_default"
+- "haarcascade_frontalface_alt"
+- "haarcascade_frontalface_alt2"
 
 
 ### 2. Red neuronal convolucional (CNN)
