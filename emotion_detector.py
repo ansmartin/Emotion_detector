@@ -26,10 +26,10 @@ username = "emotion_detector"
 emotions = ["Ira", "Asco", "Miedo", "Alegría", "Tristeza", "Sorpresa", "Neutral"]
 
 # MODELOS
-path_hcc_1 = '../haarcascade_frontalface_default.xml'
-path_hcc_2 = '../haarcascade_frontalface_alt.xml'
-path_hcc_3 = '../haarcascade_frontalface_alt2.xml'
-path_cnn = '../my_model_uu_150_60'
+path_hcc_1 = './models/haarcascade_frontalface_default.xml'
+path_hcc_2 = './models/haarcascade_frontalface_alt.xml'
+path_hcc_3 = './models/haarcascade_frontalface_alt2.xml'
+path_cnn = './models/modelo_100_40'
 
 classifier_default = cv2.CascadeClassifier()
 classifier_alt = cv2.CascadeClassifier()
